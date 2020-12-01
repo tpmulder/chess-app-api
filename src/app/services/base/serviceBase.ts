@@ -1,10 +1,10 @@
 import Mongoose from "mongoose";
-import { IRepository } from "../../repositories/base/repositoryBase";
+import { Repository } from "../../repositories/base/repositoryBase";
 
 export default abstract class ServiceBase<T extends Mongoose.Document> {
-  private readonly _repository: IRepository<T>;
+  private readonly _repository: Repository<T>;
 
-  constructor(repository: IRepository<T>) {
+  constructor(repository: Repository<T>) {
     this._repository = repository;
   }
 
