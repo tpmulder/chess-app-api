@@ -1,14 +1,16 @@
-import { http_status_codes } from "./enums";
+import { error_messages, http_status_codes } from "./enums";
 
 export class ApiError extends Error {
     status: http_status_codes;
+    validationErrors?: ValidationError[]
 
-    constructor(status: http_status_codes, errorMessage: string) {
+    constructor(status: http_status_codes, errorMessage: string, validationErrors?: ValidationError[]) {
         super();
         
         this.status = status;
         this.name = ApiError.getNameFromStatus(status);
         this.message = errorMessage;
+        this.validationErrors = validationErrors;
     }
 
     static convert(error: any): ApiError {
@@ -23,19 +25,40 @@ export class ApiError extends Error {
         switch (status) {
             case http_status_codes.bad_request:
                 return "Invalid request";
-            case http_status_codes.internal_server_error:
-                return "Internal server error";
             case http_status_codes.unauthorized:
                 return "Unauthorized";
+            case http_status_codes.not_found:
+                return "Not found";
             default:
-                return "request successful!";
+                return "Internal server error";
         }
     }
 }
 
-export class NotFoundError extends Error {
-    constructor(objName: string) {
-        let msg = `${objName} not found.`;
-        super(msg);
+export class ValidationError {
+    constructor(public readonly field: string, public readonly message: string) { }
+}
+
+export class NotFoundError extends ApiError {
+    constructor(searchVal: string, itemName?: string, searchProp?: string) {
+        super(http_status_codes.not_found, error_messages.not_found
+            .replace('{ITEM}', itemName ? itemName : 'Item')
+            .replace('{PATH}', searchProp ? searchProp : 'id')
+            .replace('{VAL}', searchVal))
+    }
+}
+
+export class InvalidReferenceError extends ApiError {
+    constructor(searchVal: string, itemName?: string, searchProp?: string) {
+        super(http_status_codes.bad_request, error_messages.not_found
+            .replace('{ITEM}', itemName ? itemName : 'Item')
+            .replace('{PATH}', searchProp ? searchProp : 'id')
+            .replace('{VAL}', searchVal))
+    }
+}
+
+export class InvalidParametersError extends ApiError {
+    constructor(errors: ValidationError[]) {
+        super(http_status_codes.bad_request, error_messages.invalid_parameters, errors)
     }
 }

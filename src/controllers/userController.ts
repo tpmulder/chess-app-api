@@ -1,84 +1,45 @@
-import ApiController from "./base/apiController";
 import express from "express";
-import { User } from "../app/models/user/interface";
+import User from "../app/models/user/interface";
 import UserService from "../app/services/userService";
 import ControllerBase from "./base/controllerBase";
-import { okResponse } from "../app/common/responses";
-import 'express-async-errors';
+import UserDto from "../app/models/user/dto";
+import UserMapperConfig from "../app/utils/mapperConfigs/userMapperConfig";
 
-class UserController extends ControllerBase implements ApiController {
-  private readonly _service: UserService;
+import 'express-async-errors';
+import { noContentResponse, okResponse } from "../app/common/responses";
+
+class UserController extends ControllerBase<User, UserDto> {
+  private readonly userService: UserService;
+  private readonly userMapperConfig: UserMapperConfig;
 
   constructor() {
-    super("users", true);
+    const service = new UserService();
+    const config = new UserMapperConfig()
+    super("users", service, config);
 
-    this._service = new UserService();
+    this.userService = service;
+    this.userMapperConfig = config;
   }
 
-  protected initializeRoutes(): void {
-    this.router.get('/', async (req: express.Request, res: express.Response) => await this.getAll(req, res));
-    this.router.post('/', async (req: express.Request, res: express.Response) => await this.create(req, res));
-    this.router.get('/:id', async (req: express.Request, res: express.Response) => await this.getById(req, res));
-    this.router.put('/:id', async (req: express.Request, res: express.Response) => await this.update(req, res));
-    this.router.delete('/:id', async (req: express.Request, res: express.Response) => await this.delete(req, res));
+  protected routes() {
+    this.router.post('/:userId/friends/:friendId', async (req: express.Request, res: express.Response) => await this.createFriendship(req, res));
+    this.router.delete('/:userId/friends/:friendId', async (req: express.Request, res: express.Response) => await this.deleteFriendship(req, res));
   }
 
-  async create(req: express.Request, res: express.Response): Promise<void> {
-    let result = await this._service.create(req.body);
+  async createFriendship(req: express.Request, res: express.Response) {
+    const userId = `${req.params.userId}`;
+    const friendId = `${req.params.friendId}`;
 
-    okResponse(res, result);
+    okResponse(res, await this.userService.createFriendship(userId, friendId));
   }
 
-  async update(req: express.Request, res: express.Response): Promise<void> {
-    try {
-      let user: User = <User>req.body;
-      let id: string = req.params.id;
+  async deleteFriendship(req: express.Request, res: express.Response) {
+    const userId = `${req.params.userId}`;
+    const friendId = `${req.params.friendId}`;
 
-      let result = await this._service.update(id, user);
+    await this.userService.deleteFriendship(userId, friendId);
 
-      res.send(result);
-    } 
-    catch (err) {
-
-    }
-  }
-
-  async delete(req: express.Request, res: express.Response): Promise<void> {
-    try {
-      let id: string = req.params.id;
-
-      let result = await this._service.delete(id);
-
-      res.send(result);
-    } 
-    catch (err) {
-      console.log(err);
-      
-      res.send(err);
-    }
-  }
-
-  async getAll(req: express.Request, res: express.Response): Promise<void> {
-    console.log(req.query);
-
-    let result = await this._service.getAll();
-
-    res.send(result);
-  }
-
-  async getById(req: express.Request, res: express.Response): Promise<void> {
-    try {
-      let id: string = req.params.id;
-
-      let result = await this._service.getById(id);
-
-      res.send(result);
-    } 
-    catch (err) {
-      console.log(err);
-      
-      res.send(err);
-    }
+    noContentResponse(res);
   }
 }
 

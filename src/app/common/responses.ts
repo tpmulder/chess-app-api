@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { http_status_codes } from "./enums";
-import { ApiError } from "./errors";
+import { ApiError, ValidationError } from "./errors";
 
 class ApiResponse {
   result?: any;
@@ -28,14 +28,14 @@ export const internalServerErrorResponse = (res: Response, errorMessage: string)
 export const unauthorizedResponse = (res: Response, errorMessage: string) =>
   createErrorResponse(res, http_status_codes.unauthorized, errorMessage);
 
-export const badRequestResponse = (res: Response, errorMessage: string) =>
-  createErrorResponse(res, http_status_codes.bad_request, errorMessage);
+export const badRequestResponse = (res: Response, errorMessage: string, validationErrors: ValidationError[]) =>
+  createErrorResponse(res, http_status_codes.bad_request, errorMessage, validationErrors);
 
 export const apiErrorResponse = (res: Response, error: ApiError) => 
-  createErrorResponse(res, error.status, error.message);
+  res.status(error.status).json(new ApiResponse(undefined, error));
 
-const createErrorResponse = (res: Response, statusCode: http_status_codes, errorMessage: string) => {
-  res.status(statusCode).json(new ApiResponse(undefined, new ApiError(statusCode, errorMessage)));
+const createErrorResponse = (res: Response, statusCode: http_status_codes, errorMessage: string, validationErrors?: ValidationError[]) => {
+  res.status(statusCode).json(new ApiResponse(undefined, new ApiError(statusCode, errorMessage, validationErrors)));
 }
 
 const createSuccessResponse = (res: Response, statusCode: http_status_codes, data?: any) => {

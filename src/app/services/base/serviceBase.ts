@@ -1,30 +1,42 @@
 import Mongoose from "mongoose";
-import { Repository } from "../../repositories/base/repositoryBase";
+import { error_messages, http_status_codes } from "../../common/enums";
+import { ApiError, NotFoundError } from "../../common/errors";
+import { MongoRepository } from "../../repositories/base/mongoRepositoryBase";
+import PaginationParams from "../../utils/pagination/paginationParams";
+import PaginationResult from "../../utils/pagination/paginationResult";
 
-export default abstract class ServiceBase<T extends Mongoose.Document> {
-  private readonly _repository: Repository<T>;
+export interface ApiService<T> {
+  getAll(params: PaginationParams): Promise<PaginationResult>;
+  getById(id: string, includes?: string, selects?: string): Promise<T>;
+  create(item: T): Promise<T>;
+  update(id: string, item: T): Promise<T>;
+  delete(id: string): Promise<T>;
+}
 
-  constructor(repository: Repository<T>) {
-    this._repository = repository;
+export default abstract class ServiceBase<T extends Mongoose.Document> implements ApiService<T> {
+  private readonly repository: MongoRepository<T>;
+
+  constructor(repository: MongoRepository<T>) {
+    this.repository = repository;
   }
 
-  async create(item: T): Promise<any> {
-    return await this._repository.create(item);
+  async getAll(params: PaginationParams): Promise<PaginationResult> {
+    return await this.repository.getAll(params);
   }
 
-  async getAll(): Promise<T[]> {
-    return await this._repository.getAll();
+  async getById(id: string, includes?: string, selects?: string): Promise<T> {
+    return await this.repository.getById(id, includes, selects);
   }
 
-  async update(id: string, item: T): Promise<any> {
-    return await this._repository.update(id, item);
+  async create(item: Partial<T>): Promise<T> {
+    return await this.repository.create(item as T);
   }
 
-  async delete(id: string): Promise<any> {
-    return await this._repository.delete(id);
+  async update(id: string, item: Partial<T>): Promise<T> {
+    return await this.repository.update(id, item as T);
   }
 
-  async getById(id: string): Promise<T | null> {
-    return await this._repository.getById(id);
+  async delete(id: string): Promise<T> {
+    return await this.repository.delete(id);
   }
 }

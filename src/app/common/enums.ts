@@ -4,13 +4,14 @@ export enum http_status_codes {
   no_content = 204,
   bad_request = 400,
   unauthorized = 401,
+  not_found = 404,
   internal_server_error = 500
 }
 
 export enum genders {
-  male = 2,
-  female = 1,
-  unknown = 0,
+  male = 'M',
+  female = 'V',
+  unknown = 'U',
 }
 
 export enum environment {
@@ -22,7 +23,8 @@ export enum environment {
 export enum error_messages {
   internal_server_error = "Something went wrong",
   unauthorized = "You do not have permission to access this data.",
-  success = "Request successful."
+  invalid_parameters = "The parameters supplied were invalid",
+  not_found = "{ITEM} with {PATH} '{VAL}' does not exist"
 }
 
 export enum chess_colours {
@@ -31,9 +33,9 @@ export enum chess_colours {
 }
 
 export enum challenge_status {
-  pending = 0,
-  accepted = 1,
-  declined = 2
+  pending = 'pending',
+  accepted = 'accepted',
+  declined = 'declined'
 }
 
 export enum piece_names {
@@ -49,4 +51,21 @@ export enum piece_names {
   white_queen = 'Q',
   white_king = 'K',
   white_bishop = 'B',
+}
+
+export enum chat_events {
+  connected = 'connected',
+  chatting = 'chatting',
+  disconnected = 'disconnected'
+}
+
+export enum query_operators {
+  eq = 'eq',
+  in = 'in',
+  gt = 'gt',
+  lt = 'lt',
+  gte = 'gte',
+  lte = 'lte',
+  ne = 'ne',
+  nin = 'nin'
 }

@@ -1,13 +1,18 @@
 import Mongoose from "mongoose";
 import { genders } from "../../common/enums";
-import { Game } from "../game/interface";
+import Message from "../message/interface";
+import { Room } from "../room/interface";
 
-export interface User extends Mongoose.Document {
-  username: string,
-  firstName: string,
-  lastName: string,
-  email: string,
-  phoneNumber: string,
-  gender: genders,
-  games: Game[]
+export default interface User extends Mongoose.Document {
+  email: string
+  username: string
+  picture: string
+  firstName: string
+  lastName: string
+  phoneNumber: string
+  gender: genders
+  rating: number
+  rooms: Room[]
+  messages: Message[]
+  friends: string[]
 }
