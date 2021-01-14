@@ -1,11 +1,12 @@
 import Mongoose from "mongoose";
-import User from "./interface";
+import { User } from "./interface";
 import uniqueValidator from 'mongoose-unique-validator';
-import { genders } from "../../common/enums";
-import BaseSchema, { SchemaModelBase } from "../base/baseSchema";
+import { Genders } from "../../common/enums";
+import { BaseSchema, SchemaModelBase } from "../base/baseSchema";
 import { Room } from "../room/interface";
-import Message from "../message/interface";
+import { Message } from "../message/interface";
 import EmailValidator from 'email-validator';
+import { UserProviders } from "../../common/constants";
 
 export interface UserModel extends SchemaModelBase<User> {
   rooms: Room[]
@@ -13,6 +14,9 @@ export interface UserModel extends SchemaModelBase<User> {
 }
 
 const userSchema = new BaseSchema({
+  provider: {
+    type: String, enum: Object.values(UserProviders), required: true, maxlength: 20
+  },
   username: {
     type: String, unique: true, required: true, maxlength: 20
   },
@@ -40,7 +44,7 @@ const userSchema = new BaseSchema({
     type: String
   },
   gender: {
-    type: String, enum: Object.values(genders), default: genders.unknown
+    type: Number, enum: Object.values(Genders), default: Genders.Unknown
   },
   rating: {
     type: Number, default: 0
@@ -58,6 +62,12 @@ userSchema.virtual('messages', {
   localField: '_id',
   foreignField: 'user',
 });
+
+userSchema.virtual('invitations', {
+  ref: 'Invitation',
+  localField: '_id',
+  foreignField: 'receiver'
+})
 
 userSchema.plugin(uniqueValidator, { message: 'path `{PATH}` is not unique' });
 

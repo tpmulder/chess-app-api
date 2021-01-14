@@ -1,33 +1,39 @@
 import express from "express";
 import { createServer, Server as httpServer } from "http";
-import MongoConnection from "./mongoConnection";
-import { environment } from "../app/common/enums";
-import { configurePreRouteMiddlewares, configurePostRouteMiddlewares } from "./middlewareConfiguration";
+import { MongoConnection } from "./mongoConnection";
+import { Environment } from "../app/common/constants";
+import { configurePostRouteMiddlewares, configureMiddlewares } from "./middlewareConfiguration";
 import UserController from "../controllers/userController";
 import { ApiController } from "../controllers/base/controllerBase";
 import { Server, Socket } from "socket.io";
 import RoomController from "../controllers/roomController";
 import neo4j, { Driver } from 'neo4j-driver';
 import MessageController from "../controllers/messageController";
+import { InversifyExpressServer } from "inversify-express-utils";
+import { container } from "./inversify.config";
 
 class App {
-  private app: express.Application
-  private environment: environment
+  private environment: Environment
   private port: number | undefined
   private mongodbConnectionString: string | undefined
   private neo4jConnectionString: string | undefined
   private server: httpServer
 
+  public app: express.Application
   public ioServer: Server
   public neo4jDriver: Driver
 
-  constructor(env: environment) {
+  constructor(env: Environment) {
     this.environment = env;
     this.loadVariablesForEnvironment(this.environment);
-    this.app = express();
-    this.app.set("port", this.port);
+
+    this.app = new InversifyExpressServer(container)
+      .setConfig(configureMiddlewares)
+      .build();
+    
     this.server = createServer(this.app);
     this.ioServer = new Server(this.server);
+
     this.neo4jDriver = neo4j.driver(
       `${this.neo4jConnectionString}`, 
       neo4j.auth.basic(`${process.env.NEO4J_USERNAME}`, 
@@ -35,18 +41,6 @@ class App {
     );
 
     MongoConnection.connect(`${this.mongodbConnectionString}`);
-
-    var controllers = [
-      new RoomController(),
-      new UserController(),
-      new MessageController()
-    ];
-
-    configurePreRouteMiddlewares(this.app);
-
-    this.initControllers(controllers);
-    
-    configurePostRouteMiddlewares(this.app);
   }
 
   listen() {
@@ -55,19 +49,19 @@ class App {
     });
   }
 
-  private initControllers(controllers: ApiController[]): void {
-    controllers.forEach((controller) => {
-      this.app.use(`/api/v1/${controller.path}`, controller.router);
-    });
-  }
+  // private initControllers(controllers: ApiController[]): void {
+  //   controllers.forEach((controller) => {
+  //     this.app.use(`/api/v1/${controller.path}`, controller.router);
+  //   });
+  // }
 
-  private loadVariablesForEnvironment(env: environment) {
-    const neo4jConn = env === environment.local ? 'bolt://localhost:7687' : 'bolt://localhost:7687';
+  private loadVariablesForEnvironment(env: Environment) {
+    const neo4jConn = env === Environment.Local ? 'bolt://localhost:7687' : 'bolt://localhost:7687';
 
-    const mongoConn = env === environment.local ? 
+    const mongoConn = env === Environment.Local ? 
       `mongodb://localhost:27017/${process.env.MONGO_DB_NAME}` : 
       `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}` +
-      `@projectscluster.mmrax.mongodb.net/${process.env.MONGO_DB_NAME + (env === environment.development ? "Test" : "")}` +
+      `@projectscluster.mmrax.mongodb.net/${process.env.MONGO_DB_NAME + (env === Environment.Dev ? "Test" : "")}` +
       `?retryWrites=true&w=majority`;
 
     this.port = parseInt(`${process.env.PORT}`, 10);
@@ -81,7 +75,7 @@ export const neoDriver = neo4j.driver(
   neo4j.auth.basic(`${process.env.NEO4J_USERNAME}`, 
   `${process.env.NEO4J_PASSWORD}`))
 
-export default new App((<any>environment)[`${process.env.NODE_ENV}`.trim()]);
+export default new App((<any>Environment)[`${process.env.NODE_ENV}`.trim()]);
 
 // this.ioServer.on('connection', (socket: Socket) => {
 //   console.log('a user connected');

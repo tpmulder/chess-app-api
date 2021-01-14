@@ -1,71 +1,99 @@
+import { injectable } from "inversify";
 import { Driver } from "neo4j-driver"
 import { neoDriver } from "../../config/app";
+import "reflect-metadata";
 
-export type friend = { username: string }
+type Friend = { 
+    user_id: string
+    email: string
+}
 
-export default class FriendShipRepository {
+interface IFriendshipRepository {
+    getAllFriendsOfUser(id: string): Promise<Friend[]>
+    createUser(id: string, email: string): Promise<{ message: string }>
+    deleteUser(id: string): Promise<{ message: string }>
+    createFriendship(userid: string, friendId: string): Promise<{ message: string }>
+    deleteFriendship(userid: string, friendId: string): Promise<{ message: string }>
+}
+
+@injectable()
+class FriendshipRepository implements IFriendshipRepository {
     private readonly driver: Driver
 
     constructor() {
         this.driver = neoDriver;
     }
 
-    async getAllFriendsOfUser(username: string) {
+    async getAllFriendsOfUser(id: string) {
         const result = await this.exec(
-            `MATCH (a:user { username: '${username}' })--(b)` +
-            `RETURN b.username`
+            `MATCH (a:user {user_id: "${id}"})--(b)` +
+            `RETURN b`
         );
 
-        console.log(result);
-
-        return result.map(e => e.toString());
+        return (result[0] as any)._fields.map((e: any) => e.properties);
     }
 
-    async createUser(username: string) {
+    async createUser(id: string, email: string) {
         const result = await this.exec(
-            `CREATE (a:User {username: "${username}"})`
-        );
-    }
-
-    async deleteUser(username: string) {
-        const result = await this.exec(
-            `MATCH (a:User {username: "${username}"})` +
-            `DETACH DELETE a`
+            `CREATE (a:User {user_id: "${id}", email:"${email}"}) ` +
+            'RETURN a'
         );
 
-        return result;
+        const user: Friend = (result[0] as any)._fields[0].properties;
+
+        return { message: `created new user "${user.user_id}" with email "${user.email}"` };
     }
 
-    async createFriendship(username: string, friendName: string) {
+    async deleteUser(id: string) {
         const result = await this.exec(
-            `MATCH (a:User {username: "${username}"}) ` +
-            `MATCH (b:User {username: "${friendName}"}) ` +
-            'MERGE (a)-[:FRIENDS]-(b)'
+            `MATCH(a:User {user_id: "${id}"}) ` +
+            'WITH a, a.username AS u, a.user_id AS i ' +
+            'DETACH DELETE a ' +
+            'RETURN u, i'
         );
 
-        return { message: `${username} and ${friendName} are now friends!` };
+        const username: Friend = (result[0] as any)._fields[0];
+
+        return { message: `${username} is deleted`}
     }
 
-    async deleteFriendship(username: string, friendName: string) {
+    async createFriendship(userId: string, friendId: string) {
         const result = await this.exec(
-            `MATCH (a:User {username: "${username}"}) ` + 
-            `MATCH (b:User {username: "${friendName}"}) ` + 
+            `MATCH (a:User {email: "${userId}"}) ` +
+            `MATCH (b:User {email: "${friendId}"}) ` +
+            'MERGE (a)-[:FRIENDS]-(b) ' +
+            'RETURN a, b'
+        );
+
+        const user: Friend = (result[0] as any)._fields[0].properties;
+        const friend: Friend = (result[0] as any)._fields[1].properties;
+
+        return { message: `${user.email} and ${friend.email} are now friends.` };
+    }
+
+    async deleteFriendship(userId: string, friendId: string) {
+        const result = await this.exec(
+            `MATCH (a:User {email: "${userId}"}) ` + 
+            `MATCH (b:User {email: "${friendId}"}) ` + 
             'MATCH (a)-[r]-(b) ' + 
-            'DELETE r'
+            'DELETE r ' +
+            'RETURN a, b'
         );
 
-        return { message: `${username} and ${friendName} are no friends anymore.` };
+        const user: Friend = (result[0] as any)._fields[0].properties;
+        const friend: Friend = (result[0] as any)._fields[1].properties;
+
+        return { message: `${user.email} and ${friend.email} are no longer friends.` };
     }
 
     private async exec(query: string) {
         try {
-            const session = this.driver.session();
-            
+            const session = this.driver.session();      
             const result = await session.run(query);
     
             await session.close();
     
-            return result.records.map((e) => e.toObject());
+            return result.records;
         } 
         catch (err) {
             console.log(err);
@@ -73,3 +101,5 @@ export default class FriendShipRepository {
         }
     }
 }
+
+export { Friend, IFriendshipRepository, FriendshipRepository }

@@ -1,8 +1,15 @@
-import Message from "../models/message/interface";
+import { injectable } from "inversify";
+import { Message } from "../models/message/interface";
 import MessageSchema, { MessageModel } from "../models/message/schema";
-import { RepositoryBase } from "./base/mongoRepositoryBase";
+import { MongoRepository, RepositoryBase } from "./base/mongoRepositoryBase";
+import "reflect-metadata";
 
-export default class MessageRepository extends RepositoryBase<Message> {
+interface IMessageRepository extends MongoRepository<Message> {
+    
+}
+
+@injectable()
+class MessageRepository extends RepositoryBase<Message> implements IMessageRepository {
     private readonly messageModel: MessageModel
     
     constructor() {
@@ -11,3 +18,5 @@ export default class MessageRepository extends RepositoryBase<Message> {
         this.messageModel = MessageSchema;
     }
 }
+
+export { IMessageRepository, MessageRepository }

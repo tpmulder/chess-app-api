@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { error_messages } from "../common/enums";
+import { ErrorMessages } from "../common/constants";
 import { ApiError } from "../common/errors";
 import { apiErrorResponse, internalServerErrorResponse, unauthorizedResponse } from "../common/responses";
 
@@ -9,5 +9,5 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
         else if(err.name === "UnauthorizedError") 
             unauthorizedResponse(res, err.message);
         else 
-            internalServerErrorResponse(res, error_messages.internal_server_error);
+            internalServerErrorResponse(res, ErrorMessages.InternalServerError);
 }

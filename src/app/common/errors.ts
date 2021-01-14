@@ -1,10 +1,11 @@
-import { error_messages, http_status_codes } from "./enums";
+import { ErrorMessages } from "./constants";
+import { HttpStatusCodes } from "./enums";
 
 export class ApiError extends Error {
-    status: http_status_codes;
+    status: HttpStatusCodes;
     validationErrors?: ValidationError[]
 
-    constructor(status: http_status_codes, errorMessage: string, validationErrors?: ValidationError[]) {
+    constructor(status: HttpStatusCodes, errorMessage: string, validationErrors?: ValidationError[]) {
         super();
         
         this.status = status;
@@ -13,21 +14,20 @@ export class ApiError extends Error {
         this.validationErrors = validationErrors;
     }
 
-    static convert(error: any): ApiError {
-        let err = new ApiError(http_status_codes.internal_server_error, error.message);
-
+    static parse(error: any): ApiError {
+        let err = new ApiError(HttpStatusCodes.InternalServerError, error.message);
         err.name = error.name;
 
         return err;
     }
 
-    private static getNameFromStatus(status: http_status_codes): string {
+    private static getNameFromStatus(status: HttpStatusCodes): string {
         switch (status) {
-            case http_status_codes.bad_request:
+            case HttpStatusCodes.BadRequest:
                 return "Invalid request";
-            case http_status_codes.unauthorized:
+            case HttpStatusCodes.Unauthorized:
                 return "Unauthorized";
-            case http_status_codes.not_found:
+            case HttpStatusCodes.NotFound:
                 return "Not found";
             default:
                 return "Internal server error";
@@ -41,7 +41,7 @@ export class ValidationError {
 
 export class NotFoundError extends ApiError {
     constructor(searchVal: string, itemName?: string, searchProp?: string) {
-        super(http_status_codes.not_found, error_messages.not_found
+        super(HttpStatusCodes.NotFound, ErrorMessages.NotFound
             .replace('{ITEM}', itemName ? itemName : 'Item')
             .replace('{PATH}', searchProp ? searchProp : 'id')
             .replace('{VAL}', searchVal))
@@ -50,7 +50,7 @@ export class NotFoundError extends ApiError {
 
 export class InvalidReferenceError extends ApiError {
     constructor(searchVal: string, itemName?: string, searchProp?: string) {
-        super(http_status_codes.bad_request, error_messages.not_found
+        super(HttpStatusCodes.BadRequest, ErrorMessages.NotFound
             .replace('{ITEM}', itemName ? itemName : 'Item')
             .replace('{PATH}', searchProp ? searchProp : 'id')
             .replace('{VAL}', searchVal))
@@ -59,6 +59,6 @@ export class InvalidReferenceError extends ApiError {
 
 export class InvalidParametersError extends ApiError {
     constructor(errors: ValidationError[]) {
-        super(http_status_codes.bad_request, error_messages.invalid_parameters, errors)
+        super(HttpStatusCodes.BadRequest, ErrorMessages.InvalidParameters, errors)
     }
 }

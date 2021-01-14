@@ -1,9 +1,15 @@
+import { injectable } from "inversify";
 import { Room } from "../models/room/interface";
 import RoomSchema, { RoomModel } from "../models/room/schema"
-import User from "../models/user/interface";
-import { RepositoryBase } from "./base/mongoRepositoryBase"
+import "reflect-metadata";
+import { MongoRepository, RepositoryBase } from "./base/mongoRepositoryBase"
 
-export default class RoomRepository extends RepositoryBase<Room> {
+interface IRoomRepository extends MongoRepository<Room> {
+
+}
+
+@injectable()
+class RoomRepository extends RepositoryBase<Room> implements IRoomRepository {
     private readonly roomModel: RoomModel
     
     constructor() {
@@ -12,3 +18,5 @@ export default class RoomRepository extends RepositoryBase<Room> {
         this.roomModel = RoomSchema;
     }
 }
+
+export { IRoomRepository, RoomRepository }

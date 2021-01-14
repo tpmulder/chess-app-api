@@ -1,15 +1,25 @@
+import { inject, injectable } from "inversify";
+import "reflect-metadata";
+import { TYPES } from "../../config/types";
 import { Room } from "../models/room/interface";
-import RoomRepository from "../repositories/roomRepository";
-import UserRepository from "../repositories/userRepository";
-import ServiceBase from "./base/serviceBase";
+import { IRoomRepository } from "../repositories/roomRepository";
+import { ServiceBase, ApiService } from "./base/serviceBase";
 
-export default class RoomService extends ServiceBase<Room> {
-    private readonly roomRepository: RoomRepository;
+interface IRoomService extends ApiService<Room> {
 
-    constructor() {
-        const repo = new RoomRepository();
-        super(repo)
+}
 
-        this.roomRepository = repo;
+@injectable()
+class RoomService extends ServiceBase<Room> implements IRoomService {
+    private readonly roomRepository: IRoomRepository;
+
+    constructor(
+        @inject(TYPES.IRoomRepository) roomRepo: IRoomRepository
+    ) {
+        super(roomRepo)
+
+        this.roomRepository = roomRepo;
     }
 }
+
+export { IRoomService, RoomService }

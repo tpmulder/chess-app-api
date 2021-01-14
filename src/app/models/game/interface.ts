@@ -1,14 +1,14 @@
 import Mongoose from "mongoose";
-import { chess_colours, piece_names } from "../../common/enums";
+import { ChessColours, PieceNames } from "../../common/constants";
 
 export interface Move {
     moveNum: number
-    turn: chess_colours;
-    piece: piece_names;
+    turn: ChessColours;
+    piece: PieceNames;
     from: number;
     to: number;
-    capturedPiece?: piece_names;
-    promotion?: piece_names;
+    capturedPiece?: PieceNames;
+    promotion?: PieceNames;
 }
 
 export interface Side {

@@ -1,6 +1,5 @@
-import MessageDto from "../../models/message/dto";
-import Message from "../../models/message/interface";
-import { Room } from "../../models/room/interface";
+import { MessageDto } from "../../dtos/message/dto";
+import { Message } from "../../models/message/interface";
 import MapperConfigBase from "./base/mapperConfigBase";
 
 class MessageMapperConfig extends MapperConfigBase<Message, MessageDto> {

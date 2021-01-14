@@ -1,6 +1,6 @@
 import Mongoose from "mongoose";
-import BaseSchema, { SchemaModelBase } from "../base/baseSchema";
-import Message from "../message/interface";
+import { BaseSchema, SchemaModelBase } from "../base/baseSchema";
+import { Message } from "../message/interface";
 import { Room } from "./interface";
 
 import UserSchema from '../user/schema';

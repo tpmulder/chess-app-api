@@ -1,16 +1,25 @@
-import Message from "../models/message/interface";
-import MessageRepository from "../repositories/messageRepository";
-import RoomRepository from "../repositories/roomRepository";
-import UserRepository from "../repositories/userRepository";
-import ServiceBase from "./base/serviceBase";
+import { inject, injectable } from "inversify";
+import "reflect-metadata";
+import { TYPES } from "../../config/types";
+import { Message } from "../models/message/interface";
+import { IMessageRepository } from "../repositories/messageRepository";
+import { ApiService, ServiceBase } from "./base/serviceBase";
 
-export default class MessageService extends ServiceBase<Message> {
-    private readonly messageRepository: MessageRepository
+interface IMessageService extends ApiService<Message> {
 
-    constructor() {
-        const repo = new MessageRepository();
-        super(repo);
+}
 
-        this.messageRepository = repo;
+@injectable()
+class MessageService extends ServiceBase<Message> implements IMessageService {
+    private readonly messageRepository: IMessageRepository
+
+    constructor(
+        @inject(TYPES.IMessageRepository) messageRepo: IMessageRepository
+    ) {
+        super(messageRepo);
+
+        this.messageRepository = messageRepo;
     }
 }
+
+export { IMessageService, MessageService }

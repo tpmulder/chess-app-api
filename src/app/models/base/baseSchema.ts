@@ -12,7 +12,7 @@ type paginateOptions = {
     sort?: Record<string, number>
 }
 
-export default class BaseSchema extends Mongoose.Schema {
+class BaseSchema extends Mongoose.Schema { 
     constructor(definition?: Mongoose.SchemaDefinition, options?: Mongoose.SchemaOptions) {
         super(definition, options);
         
@@ -20,6 +20,8 @@ export default class BaseSchema extends Mongoose.Schema {
     }
 }
 
-export interface SchemaModelBase<T extends mongoose.Document> extends mongoose.Model<T> {
+interface SchemaModelBase<T extends mongoose.Document> extends mongoose.Model<T> {
     paginate: (query: FilterQuery<T>, options: paginateOptions) => any
 }
+
+export { paginateOptions, BaseSchema, SchemaModelBase }

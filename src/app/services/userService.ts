@@ -1,26 +1,38 @@
-import User from "../models/user/interface";
-import FriendShipRepository from "../repositories/friendshipRepository";
-import UserRepository from "../repositories/userRepository";
+import { inject, injectable } from "inversify";
+import "reflect-metadata";
+import { TYPES } from "../../config/types";
+import { User } from "../models/user/interface";
+import { IFriendshipRepository } from "../repositories/friendshipRepository";
+import { IUserRepository } from "../repositories/userRepository";
 import PaginationParams from "../utils/pagination/paginationParams";
 import PaginationResult from "../utils/pagination/paginationResult";
-import ServiceBase from "./base/serviceBase";
+import { ServiceBase, ApiService } from "./base/serviceBase";
 
-export default class UserService extends ServiceBase<User> {
-  private readonly userRepository: UserRepository;
-  private readonly friendshipRepository: FriendShipRepository
+interface IUserService extends ApiService<User> {
+  createFriendship(userId: string, friendId: string): Promise<{ message: string }>
+  deleteFriendship(userId: string, friendId: string): Promise<{ message: string }>
+}
 
-  constructor() {
-    const repo = new UserRepository();
-    super(repo);
+@injectable()
+class UserService extends ServiceBase<User> implements IUserService {
+  private readonly userRepository: IUserRepository;
+  private readonly friendshipRepository: IFriendshipRepository
 
-    this.userRepository = repo;
-    this.friendshipRepository = new FriendShipRepository();
+  constructor(
+    @inject(TYPES.IUserRepository) userRepo: IUserRepository,
+    @inject(TYPES.IFriendshipRepository) friendRepo: IFriendshipRepository
+  ) {
+    super(userRepo);
+
+    this.userRepository = userRepo;
+    this.friendshipRepository = friendRepo;
   }
 
   async getAll(params: PaginationParams): Promise<PaginationResult> {
-    let users = await this.userRepository.getAll(params);
+    let users = await this.userRepository.getPaged(params);
 
     if(params.options.includes?.includes('friends')) {
+      params.options.includes = params.options.includes?.replace('friends', '');
       users.items = users.items.map(async e => {
         e.friends = await this.friendshipRepository.getAllFriendsOfUser(e.username);
         return e;
@@ -34,7 +46,10 @@ export default class UserService extends ServiceBase<User> {
     let user = await this.userRepository.getById(id, includes, selects) as User;
 
     if(includes?.includes('friends')) {
-      user.friends = await this.friendshipRepository.getAllFriendsOfUser(user.username);
+      includes = includes?.replace('friends', '');
+      const friends = await this.friendshipRepository.getAllFriendsOfUser(user._id);
+
+      user.friends = await this.userRepository.getRangeById(friends.map(e => e.user_id));
     }
 
     return user;
@@ -43,17 +58,17 @@ export default class UserService extends ServiceBase<User> {
   async delete(id: string): Promise<User> {
     const mongoResult = await super.delete(id);
     
-    await this.friendshipRepository.deleteUser(mongoResult.username);
+    await this.friendshipRepository.deleteUser(mongoResult._id);
 
     return mongoResult;
   }
 
   async create(item: Partial<User>): Promise<User> {
-    const mongoResult = await super.create(item);
+      const mongoResult = await super.create(item);
 
-    await this.friendshipRepository.createUser(mongoResult.username);
-
-    return mongoResult;
+      await this.friendshipRepository.createUser(mongoResult._id, mongoResult.username);
+  
+      return mongoResult;
   }
 
   async createFriendship(userId: string, friendId: string) {
@@ -70,3 +85,5 @@ export default class UserService extends ServiceBase<User> {
     return await this.friendshipRepository.deleteFriendship(userId, friendId);
   }
 }
+
+export { IUserService, UserService }

@@ -1,10 +1,11 @@
-import UserDto from "../../models/user/dto";
-import User from "../../models/user/interface";
+import { UserDto } from "../../dtos/user/dto";
+import { User } from "../../models/user/interface";
 import MapperConfigBase from "./base/mapperConfigBase";
 
 class UserMapperConfig extends MapperConfigBase<User, UserDto> {
     forward(src: User): UserDto {
         const dto: UserDto = {
+            provider: src.provider,
             id: src._id,
             email: src.email,
             username: src.username,
@@ -16,6 +17,7 @@ class UserMapperConfig extends MapperConfigBase<User, UserDto> {
             rating: src.rating,
             messages: src.messages,
             rooms: src.rooms,
+            friends: src.friends
         }
 
         return dto;
@@ -30,7 +32,7 @@ class UserMapperConfig extends MapperConfigBase<User, UserDto> {
             lastName: src.lastName,
             phoneNumber: src.phoneNumber,
             gender: src.gender,
-            rating: src.rating,
+            rating: src.rating
          };
 
         return model;

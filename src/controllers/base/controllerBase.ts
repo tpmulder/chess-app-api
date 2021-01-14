@@ -1,12 +1,11 @@
 import express, { Router } from 'express';
 import { ApiService } from '../../app/services/base/serviceBase';
-import { noContentResponse, okResponse } from '../../app/common/responses';
-import { ApiError } from '../../app/common/errors';
-import { http_status_codes } from '../../app/common/enums';
+import { createdResponse, noContentResponse, okResponse } from '../../app/common/responses';
 import PaginationParams from '../../app/utils/pagination/paginationParams';
 
 import 'express-async-errors';
-import MapperConfigBase, { MapperConfig } from '../../app/utils/mapperConfigs/base/mapperConfigBase';
+import { MapperConfig } from '../../app/utils/mapperConfigs/base/mapperConfigBase';
+import { BaseHttpController } from 'inversify-express-utils';
 
 export interface ApiController {
     readonly path: string
@@ -19,13 +18,15 @@ export interface ApiController {
     delete: express.RequestHandler
 }
 
-export default abstract class ControllerBase<T, TDto> implements ApiController {
+export default abstract class ControllerBase<T, TDto> extends BaseHttpController implements ApiController {
     private readonly service: ApiService<T>
     private readonly mapperConfig: MapperConfig<T, TDto>
     readonly router: Router
     readonly path: string
 
     constructor(path: string, service: ApiService<T>, mapperConfig: MapperConfig<T, TDto>) {
+        super()
+        
         this.router = express.Router();
         this.service = service;
         this.path = path;
@@ -71,7 +72,7 @@ export default abstract class ControllerBase<T, TDto> implements ApiController {
     async create(req: express.Request, res: express.Response) {
         const result = await this.service.create(req.body);
 
-        okResponse(res, this.mapperConfig.forward(result));
+        createdResponse(res, this.mapperConfig.forward(result));
     }
     
     async update(req: express.Request, res: express.Response) {

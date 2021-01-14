@@ -1,6 +1,6 @@
 import { cleanEnv, num, str } from 'envalid';
 
-export default function validateEnvironment() {
+const validateEnvironment = () => {
     cleanEnv(process.env, {
         MONGO_DB_NAME: str(),
 
@@ -15,6 +15,8 @@ export default function validateEnvironment() {
         AUTH0_CLIENT_ID: str(),
         AUTH0_DOMAIN: str(),
         AUTH0_CLIENT_SECRET: str(),
-        AUTH0_AUDIENCE: str()
+        AUTH0_AUDIENCE: str(),
     });
 }
+
+export { validateEnvironment }

@@ -1,11 +1,9 @@
 import Mongoose from "mongoose";
-import { error_messages, http_status_codes } from "../../common/enums";
-import { ApiError, NotFoundError } from "../../common/errors";
 import { MongoRepository } from "../../repositories/base/mongoRepositoryBase";
 import PaginationParams from "../../utils/pagination/paginationParams";
 import PaginationResult from "../../utils/pagination/paginationResult";
 
-export interface ApiService<T> {
+interface ApiService<T> {
   getAll(params: PaginationParams): Promise<PaginationResult>;
   getById(id: string, includes?: string, selects?: string): Promise<T>;
   create(item: T): Promise<T>;
@@ -13,7 +11,7 @@ export interface ApiService<T> {
   delete(id: string): Promise<T>;
 }
 
-export default abstract class ServiceBase<T extends Mongoose.Document> implements ApiService<T> {
+abstract class ServiceBase<T extends Mongoose.Document> implements ApiService<T> {
   private readonly repository: MongoRepository<T>;
 
   constructor(repository: MongoRepository<T>) {
@@ -21,7 +19,7 @@ export default abstract class ServiceBase<T extends Mongoose.Document> implement
   }
 
   async getAll(params: PaginationParams): Promise<PaginationResult> {
-    return await this.repository.getAll(params);
+    return await this.repository.getPaged(params);
   }
 
   async getById(id: string, includes?: string, selects?: string): Promise<T> {
@@ -40,3 +38,5 @@ export default abstract class ServiceBase<T extends Mongoose.Document> implement
     return await this.repository.delete(id);
   }
 }
+
+export { ApiService, ServiceBase }

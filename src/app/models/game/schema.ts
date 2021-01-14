@@ -1,5 +1,5 @@
 import Mongoose, { Model } from "mongoose";
-import { chess_colours, piece_names } from "../../common/enums";
+import { ChessColours, PieceNames } from "../../common/constants";
 import { Game } from "./interface";
 import UserSchema from "../user/schema";
 
@@ -12,10 +12,10 @@ const moveSchema = new Mongoose.Schema({
     type: Number, required: true
   },
   turn: {
-    type: String, enum: Object.values(chess_colours), required: true
+    type: String, enum: Object.values(ChessColours), required: true
   },
   piece: {
-    type: String, enum: Object.values(piece_names), required: true
+    type: String, enum: Object.values(PieceNames), required: true
   },
   from: {
     type: String, required: true
@@ -27,7 +27,7 @@ const moveSchema = new Mongoose.Schema({
     type: String
   },
   promotion: {
-    type: String, enum: Object.values(piece_names)
+    type: String, enum: Object.values(PieceNames)
   }
 }, { _id: false })
 
@@ -59,17 +59,17 @@ const gameSchema = new Mongoose.Schema({
   }
 });
 
-gameSchema.pre<Game>('save', async function(): Promise<void> {
-  try {
-    if(this.isModified('white.player')) {
-      UserSchema.findByIdAndUpdate(this.white.player, { $push: { games: this.id } });
-    } else if (this.isModified('black.player')) {
-      UserSchema.findByIdAndUpdate(this.black.player, { $push: { games: this.id } });
-    }
-  }
-  catch (error) {
-    throw error;
-  }
-});
+// gameSchema.pre<Game>('save', async function(): Promise<void> {
+//   try {
+//     if(this.isModified('white.player')) {
+//       UserSchema.findByIdAndUpdate(this.white.player, { $push: { games: this.id } });
+//     } else if (this.isModified('black.player')) {
+//       UserSchema.findByIdAndUpdate(this.black.player, { $push: { games: this.id } });
+//     }
+//   }
+//   catch (error) {
+//     throw error;
+//   }
+// });
 
 export default Mongoose.model<Game & GameModel>("Game", gameSchema);

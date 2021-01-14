@@ -1,6 +1,6 @@
 import Mongoose from "mongoose";
 
-export default class MongoConnection {
+class MongoConnection {
   static mongoOptions: Mongoose.ConnectionOptions = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -21,11 +21,13 @@ export default class MongoConnection {
     try {
       this.mongoInstance = await Mongoose.connect(connectionString, this.mongoOptions);
 
-      console.log(`Successfully connected to mongo database.`);
+      console.log('Successfully connected to mongo database.');
     } 
     catch (error) {
-      console.log("Error connecting to database: ", error);
+      console.log('Error connecting to database: ', error);
 
     }
   }
 }
+
+export { MongoConnection }
