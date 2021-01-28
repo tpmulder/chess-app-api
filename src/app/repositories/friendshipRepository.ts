@@ -1,22 +1,20 @@
-import { injectable } from "inversify";
 import { Driver } from "neo4j-driver"
 import { neoDriver } from "../../config/app";
 import "reflect-metadata";
 
 type Friend = { 
     user_id: string
-    email: string
+    username: string
 }
 
 interface IFriendshipRepository {
     getAllFriendsOfUser(id: string): Promise<Friend[]>
-    createUser(id: string, email: string): Promise<{ message: string }>
+    createUser(id: string, username: string): Promise<{ message: string }>
     deleteUser(id: string): Promise<{ message: string }>
     createFriendship(userid: string, friendId: string): Promise<{ message: string }>
     deleteFriendship(userid: string, friendId: string): Promise<{ message: string }>
 }
 
-@injectable()
 class FriendshipRepository implements IFriendshipRepository {
     private readonly driver: Driver
 
@@ -25,23 +23,26 @@ class FriendshipRepository implements IFriendshipRepository {
     }
 
     async getAllFriendsOfUser(id: string) {
+        console.log(id)
         const result = await this.exec(
-            `MATCH (a:user {user_id: "${id}"})--(b)` +
+            `MATCH (a:User {user_id: "${id}"})--(b)` +
             `RETURN b`
         );
+
+        console.log(result);
 
         return (result[0] as any)._fields.map((e: any) => e.properties);
     }
 
-    async createUser(id: string, email: string) {
+    async createUser(id: string, username: string) {
         const result = await this.exec(
-            `CREATE (a:User {user_id: "${id}", email:"${email}"}) ` +
+            `CREATE (a:User {user_id: "${id}", username:"${username}"}) ` +
             'RETURN a'
         );
 
         const user: Friend = (result[0] as any)._fields[0].properties;
 
-        return { message: `created new user "${user.user_id}" with email "${user.email}"` };
+        return { message: `created new user "${user.user_id}" with username "${user.username}"` };
     }
 
     async deleteUser(id: string) {
@@ -59,8 +60,8 @@ class FriendshipRepository implements IFriendshipRepository {
 
     async createFriendship(userId: string, friendId: string) {
         const result = await this.exec(
-            `MATCH (a:User {email: "${userId}"}) ` +
-            `MATCH (b:User {email: "${friendId}"}) ` +
+            `MATCH (a:User {user_id: "${userId}"}) ` +
+            `MATCH (b:User {user_id: "${friendId}"}) ` +
             'MERGE (a)-[:FRIENDS]-(b) ' +
             'RETURN a, b'
         );
@@ -68,13 +69,13 @@ class FriendshipRepository implements IFriendshipRepository {
         const user: Friend = (result[0] as any)._fields[0].properties;
         const friend: Friend = (result[0] as any)._fields[1].properties;
 
-        return { message: `${user.email} and ${friend.email} are now friends.` };
+        return { message: `${user.username} and ${friend.username} are now friends.` };
     }
 
     async deleteFriendship(userId: string, friendId: string) {
         const result = await this.exec(
-            `MATCH (a:User {email: "${userId}"}) ` + 
-            `MATCH (b:User {email: "${friendId}"}) ` + 
+            `MATCH (a:User {user_id: "${userId}"}) ` + 
+            `MATCH (b:User {user_id: "${friendId}"}) ` + 
             'MATCH (a)-[r]-(b) ' + 
             'DELETE r ' +
             'RETURN a, b'
@@ -83,7 +84,7 @@ class FriendshipRepository implements IFriendshipRepository {
         const user: Friend = (result[0] as any)._fields[0].properties;
         const friend: Friend = (result[0] as any)._fields[1].properties;
 
-        return { message: `${user.email} and ${friend.email} are no longer friends.` };
+        return { message: `${user.username} and ${friend.username} are no longer friends.` };
     }
 
     private async exec(query: string) {
@@ -96,10 +97,9 @@ class FriendshipRepository implements IFriendshipRepository {
             return result.records;
         } 
         catch (err) {
-            console.log(err);
             throw new Error(err.message);
         }
     }
 }
 
-export { Friend, IFriendshipRepository, FriendshipRepository }
+export { FriendshipRepository, IFriendshipRepository, Friend }

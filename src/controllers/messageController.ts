@@ -1,20 +1,21 @@
 import ControllerBase from "./base/controllerBase";
 import { Message } from "../app/models/message/interface";
-import { MessageDto } from "../app/dtos/message/dto";
-import MessageMapperConfig from "../app/utils/mapperConfigs/messageMapperConfig";
-import { IMessageService } from "../app/services/messageService";
+import messageMapperConfig, { MessageMapperConfig } from "../app/utils/mapperConfigs/messageMapperConfig";
 
 import 'express-async-errors';
+import { MessageService } from "../app/services/messageService";
+import { MessageDto } from "../app/dtos/message/dto";
 
 export default class MessageController extends ControllerBase<Message, MessageDto> {
-    private readonly messageService: IMessageService;
+    private readonly messageService: MessageService;
     private readonly messageMapperConfig: MessageMapperConfig;
 
-    constructor(msgService: IMessageService, mapping: MessageMapperConfig) {
-        super("messages", msgService, mapping);
+    constructor() {
+        const service = new MessageService();
+        super("messages", service, messageMapperConfig);
 
-        this.messageService = msgService;
-        this.messageMapperConfig = mapping;
+        this.messageService = service;
+        this.messageMapperConfig = messageMapperConfig;
     }
 
     protected routes() {

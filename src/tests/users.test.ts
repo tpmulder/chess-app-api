@@ -8,9 +8,9 @@ import server from '../server';
 chai.use(chaiHttp);
 const should = chai.should();
 
-describe('users',
-  () => {
+describe('users', () => {
     const testUser: Partial<UserDto> = {
+        provider: "Auth0",
         email: "testuser@hotmail.com",
         username: "TestUser",
         picture: "https://lighthousevc.nl/wp-content/uploads/2016/02/765-default-avatar.png",
@@ -18,7 +18,6 @@ describe('users',
         lastName: "user",
         phoneNumber: "012345678",
         gender: Genders.Male,
-        rating: 0,
         messages: [],
         rooms:[]
     };
@@ -36,13 +35,13 @@ describe('users',
         });
     });
 
-    it('GET SUCCESSFUL: should get newly created testroom by email', (done) => {
+    it('GET SUCCESSFUL: should get only newly created user', (done) => {
         chai.request(server).get(`/api/v1/users?search=username[eq]${testUser.username}`)
         .end((err, res) => {
             res.should.have.status(200);
             const user: UserDto = res.body.result.items[0];
 
-            should.equal(testUser.username, testUser.username)
+            should.equal(user.username, testUser.username)
 
             done();
         })
@@ -62,6 +61,7 @@ describe('users',
         .end((err, res) => {
             res.should.have.status(201);
             res.body.should.have.property('result');
+            testUser.id = res.body.result.id;
 
             done();
         });
@@ -94,6 +94,15 @@ describe('users',
         .end((err, res) => {
             res.should.have.status(400);
             res.body.should.have.property('error');
+
+            done();
+        });
+    });
+
+    it('DELETE SUCCESS: should return no content (204)', (done) => { 
+        chai.request(server).del(`/api/v1/users/${testUser.id}`)
+        .end((err, res) => {
+            res.should.have.status(204);
 
             done();
         });

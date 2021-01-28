@@ -38,15 +38,6 @@ describe('rooms',
             done();
         })
     });
-
-    it('DELETE SUCCESS: should return no content (204)', (done) => { 
-        chai.request(server).del(`/api/v1/rooms/${testRoom.id}`)
-        .end((err, res) => {
-            res.should.have.status(204);
-
-            done();
-        });
-    });
     
     it('CREATE FAILED: should return user does not exist', (done) => { 
         chai.request(server).post('/api/v1/rooms').send({ ...testRoom, email: 'blieblabloe', users: ['5fcfcd323ad4fe58f07fdc65'] })

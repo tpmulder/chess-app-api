@@ -1,29 +1,27 @@
 import express from "express";
 import { User } from "../app/models/user/interface";
 import ControllerBase from "./base/controllerBase";
-import { UserDto } from "../app/dtos/user/dto";
-import UserMapperConfig from "../app/utils/mapperConfigs/userMapperConfig";
+import userMapperConfig, { UserMapperConfig } from "../app/utils/mapperConfigs/userMapperConfig";
 import { createdResponse, noContentResponse } from "../app/common/responses";
 
 import 'express-async-errors';
-import { IUserService } from "../app/services/userService";
-import { inject } from "inversify";
-import { TYPES } from "../config/types";
-import { MapperConfig, MapperConfigBase } from "../app/utils/mapperConfigs/base/mapperConfigBase";
+import { UserService } from "../app/services/userService";
+import { UserDto } from "../app/dtos/user/dto";
 
 class UserController extends ControllerBase<User, UserDto> {
-  private readonly userService: IUserService;
-  private readonly mapping: UserMapperConfig;
+  private readonly userService: UserService;
+  private readonly userMapperConfig: UserMapperConfig;
 
-  constructor(userService: IUserService, mapping: UserMapperConfig) {
-    super("user", userService, mapping)
+  constructor() {
+    const service = new UserService();
+    super("users", service, userMapperConfig);
 
-    this.userService = userService;
-    this.mapping = mapping
+    this.userService = service;
+    this.userMapperConfig = userMapperConfig;
   }
 
   protected routes() {
-    this.router.post('/friends', async (req: express.Request, res: express.Response) => await this.createFriendship(req, res));
+    this.router.post('/:userId/friends', async (req: express.Request, res: express.Response) => await this.createFriendship(req, res));
     this.router.delete('/friends', async (req: express.Request, res: express.Response) => await this.deleteFriendship(req, res));
   }
 

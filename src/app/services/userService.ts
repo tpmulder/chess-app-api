@@ -1,31 +1,32 @@
-import { inject, injectable } from "inversify";
-import "reflect-metadata";
-import { TYPES } from "../../config/types";
+import e from "express";
 import { User } from "../models/user/interface";
-import { IFriendshipRepository } from "../repositories/friendshipRepository";
-import { IUserRepository } from "../repositories/userRepository";
+import { FriendshipRepository, IFriendshipRepository } from "../repositories/friendshipRepository";
+import { IRoomRepository, RoomRepository } from "../repositories/roomRepository";
+import { IUserRepository, UserRepository } from "../repositories/userRepository";
 import PaginationParams from "../utils/pagination/paginationParams";
 import PaginationResult from "../utils/pagination/paginationResult";
-import { ServiceBase, ApiService } from "./base/serviceBase";
+import { ApiService, ServiceBase } from "./base/serviceBase";
 
 interface IUserService extends ApiService<User> {
   createFriendship(userId: string, friendId: string): Promise<{ message: string }>
   deleteFriendship(userId: string, friendId: string): Promise<{ message: string }>
 }
 
-@injectable()
 class UserService extends ServiceBase<User> implements IUserService {
   private readonly userRepository: IUserRepository;
+  private readonly roomRepository: IRoomRepository;
   private readonly friendshipRepository: IFriendshipRepository
 
-  constructor(
-    @inject(TYPES.IUserRepository) userRepo: IUserRepository,
-    @inject(TYPES.IFriendshipRepository) friendRepo: IFriendshipRepository
-  ) {
-    super(userRepo);
+  constructor()
+  {
+    const repo = new UserRepository();
+    const friendRepo = new FriendshipRepository();
+    const roomRepo = new RoomRepository();
+    super(repo);
 
-    this.userRepository = userRepo;
+    this.userRepository = repo;
     this.friendshipRepository = friendRepo;
+    this.roomRepository = roomRepo;
   }
 
   async getAll(params: PaginationParams): Promise<PaginationResult> {
@@ -43,13 +44,14 @@ class UserService extends ServiceBase<User> implements IUserService {
   }
 
   async getById(id: string, includes?: string, selects?: string) {
-    let user = await this.userRepository.getById(id, includes, selects) as User;
+    let user = await this.userRepository.getById(id, includes, selects);
 
-    if(includes?.includes('friends')) {
-      includes = includes?.replace('friends', '');
+    if(includes?.includes('friends,friends.rooms')) {
       const friends = await this.friendshipRepository.getAllFriendsOfUser(user._id);
 
-      user.friends = await this.userRepository.getRangeById(friends.map(e => e.user_id));
+      const userFriends = await this.userRepository.getRangeById(friends.map(e => e.user_id), "rooms");
+
+      user.friends = userFriends
     }
 
     return user;

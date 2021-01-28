@@ -13,7 +13,6 @@ export interface User extends Mongoose.Document {
   lastName: string
   phoneNumber: string
   gender: Genders
-  rating: number
   rooms: Room[]
   messages: Message[]
   friends: User[]

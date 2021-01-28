@@ -1,4 +1,4 @@
-import Mongoose from "mongoose";
+import mongoose from "mongoose";
 import { User } from "./interface";
 import uniqueValidator from 'mongoose-unique-validator';
 import { Genders } from "../../common/enums";
@@ -45,9 +45,6 @@ const userSchema = new BaseSchema({
   },
   gender: {
     type: Number, enum: Object.values(Genders), default: Genders.Unknown
-  },
-  rating: {
-    type: Number, default: 0
   }
 }, { toJSON: { virtuals: true } });
 
@@ -71,4 +68,4 @@ userSchema.virtual('invitations', {
 
 userSchema.plugin(uniqueValidator, { message: 'path `{PATH}` is not unique' });
 
-export default Mongoose.model<User, UserModel>("User", userSchema);
+export default mongoose.model<User, UserModel>("User", userSchema);

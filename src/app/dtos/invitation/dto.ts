@@ -1,10 +1,10 @@
-import { User } from "../../models/user/interface";
 import { InvitationFor, InvitationStatus } from "../../common/enums";
-import DtoBase from "../../models/base/dtoBase";
+import DtoBase from "../base/dtoBase";
+import { UserDto } from "../user/dto";
 
 export interface InvitationDto extends DtoBase {
-    sender?: User | string
-    receiver?: User | string
+    sender?: UserDto | string
+    receiver?: UserDto | string
     description: string
     for: InvitationFor
     status: InvitationStatus

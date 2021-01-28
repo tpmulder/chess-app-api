@@ -1,16 +1,15 @@
 import express from "express";
 import { createServer, Server as httpServer } from "http";
-import { MongoConnection } from "./mongoConnection";
 import { Environment } from "../app/common/constants";
-import { configurePostRouteMiddlewares, configureMiddlewares } from "./middlewareConfiguration";
+import { configureMiddlewares, configurePostRouteMiddlewares } from "./middlewareConfiguration";
 import UserController from "../controllers/userController";
 import { ApiController } from "../controllers/base/controllerBase";
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import RoomController from "../controllers/roomController";
 import neo4j, { Driver } from 'neo4j-driver';
 import MessageController from "../controllers/messageController";
-import { InversifyExpressServer } from "inversify-express-utils";
-import { container } from "./inversify.config";
+import { MongoConnection } from "./mongoConnection";
+import InvitationController from "../controllers/invitationController";
 
 class App {
   private environment: Environment
@@ -27,9 +26,8 @@ class App {
     this.environment = env;
     this.loadVariablesForEnvironment(this.environment);
 
-    this.app = new InversifyExpressServer(container)
-      .setConfig(configureMiddlewares)
-      .build();
+    this.app = express();
+    this.app.set("port", this.port);
     
     this.server = createServer(this.app);
     this.ioServer = new Server(this.server);
@@ -41,6 +39,19 @@ class App {
     );
 
     MongoConnection.connect(`${this.mongodbConnectionString}`);
+
+    var controllers = [
+      new RoomController(),
+      new UserController(),
+      new MessageController(),
+      new InvitationController()
+    ];
+
+    configureMiddlewares(this.app);
+
+    this.initControllers(controllers);
+    
+    configurePostRouteMiddlewares(this.app);
   }
 
   listen() {
@@ -49,19 +60,19 @@ class App {
     });
   }
 
-  // private initControllers(controllers: ApiController[]): void {
-  //   controllers.forEach((controller) => {
-  //     this.app.use(`/api/v1/${controller.path}`, controller.router);
-  //   });
-  // }
+  private initControllers(controllers: ApiController[]): void {
+    controllers.forEach((controller) => {
+      this.app.use(`/api/v1/${controller.path}`, controller.router);
+    });
+  }
 
   private loadVariablesForEnvironment(env: Environment) {
-    const neo4jConn = env === Environment.Local ? 'bolt://localhost:7687' : 'bolt://localhost:7687';
+    const neo4jConn = env === Environment.local ? 'bolt://localhost:7687' : 'bolt://localhost:7687';
 
-    const mongoConn = env === Environment.Local ? 
+    const mongoConn = env === Environment.local ? 
       `mongodb://localhost:27017/${process.env.MONGO_DB_NAME}` : 
       `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}` +
-      `@projectscluster.mmrax.mongodb.net/${process.env.MONGO_DB_NAME + (env === Environment.Dev ? "Test" : "")}` +
+      `@projectscluster.mmrax.mongodb.net/${process.env.MONGO_DB_NAME + (env === Environment.dev ? "Test" : "")}` +
       `?retryWrites=true&w=majority`;
 
     this.port = parseInt(`${process.env.PORT}`, 10);
@@ -76,21 +87,3 @@ export const neoDriver = neo4j.driver(
   `${process.env.NEO4J_PASSWORD}`))
 
 export default new App((<any>Environment)[`${process.env.NODE_ENV}`.trim()]);
-
-// this.ioServer.on('connection', (socket: Socket) => {
-//   console.log('a user connected');
-//   if (interval) {
-//     clearInterval(interval);
-//   }
-//   interval = setInterval(() => getApiAndEmit(socket), 1000);
-//   socket.on("disconnect", () => {
-//     console.log("Client disconnected");
-//     clearInterval(interval);
-//   });
-// });
-
-// const getApiAndEmit = (socket: Socket) => {
-//   const response = new Date();
-//   // Emitting a new message. Will be consumed by the client
-//   socket.emit("FromAPI", response);
-// };

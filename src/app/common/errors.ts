@@ -41,7 +41,7 @@ export class ValidationError {
 
 export class NotFoundError extends ApiError {
     constructor(searchVal: string, itemName?: string, searchProp?: string) {
-        super(HttpStatusCodes.NotFound, ErrorMessages.NotFound
+        super(HttpStatusCodes.NotFound, ErrorMessages.notFound
             .replace('{ITEM}', itemName ? itemName : 'Item')
             .replace('{PATH}', searchProp ? searchProp : 'id')
             .replace('{VAL}', searchVal))
@@ -50,7 +50,7 @@ export class NotFoundError extends ApiError {
 
 export class InvalidReferenceError extends ApiError {
     constructor(searchVal: string, itemName?: string, searchProp?: string) {
-        super(HttpStatusCodes.BadRequest, ErrorMessages.NotFound
+        super(HttpStatusCodes.BadRequest, ErrorMessages.notFound
             .replace('{ITEM}', itemName ? itemName : 'Item')
             .replace('{PATH}', searchProp ? searchProp : 'id')
             .replace('{VAL}', searchVal))
@@ -59,6 +59,6 @@ export class InvalidReferenceError extends ApiError {
 
 export class InvalidParametersError extends ApiError {
     constructor(errors: ValidationError[]) {
-        super(HttpStatusCodes.BadRequest, ErrorMessages.InvalidParameters, errors)
+        super(HttpStatusCodes.BadRequest, ErrorMessages.invalidParameters, errors)
     }
 }

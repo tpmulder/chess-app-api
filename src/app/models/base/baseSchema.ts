@@ -1,6 +1,4 @@
-import mongoose from "mongoose";
-import Mongoose from "mongoose";
-import { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import paginationPlugin from 'mongoose-paginate-v2';
 
 type paginateOptions = {
@@ -12,8 +10,8 @@ type paginateOptions = {
     sort?: Record<string, number>
 }
 
-class BaseSchema extends Mongoose.Schema { 
-    constructor(definition?: Mongoose.SchemaDefinition, options?: Mongoose.SchemaOptions) {
+class BaseSchema extends mongoose.Schema { 
+    constructor(definition?: mongoose.SchemaDefinition, options?: mongoose.SchemaOptions) {
         super(definition, options);
         
         this.plugin(paginationPlugin);

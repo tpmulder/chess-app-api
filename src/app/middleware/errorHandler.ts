@@ -9,5 +9,5 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
         else if(err.name === "UnauthorizedError") 
             unauthorizedResponse(res, err.message);
         else 
-            internalServerErrorResponse(res, ErrorMessages.InternalServerError);
+            internalServerErrorResponse(res, ErrorMessages.internalServerError);
 }

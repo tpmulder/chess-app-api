@@ -1,12 +1,14 @@
 import { UserDto } from "../../dtos/user/dto";
 import { User } from "../../models/user/interface";
-import MapperConfigBase from "./base/mapperConfigBase";
+import { MapperConfigBase } from "./base/mapperConfigBase";
+import messageMapperConfig from "./messageMapperConfig";
+import roomMapperConfig from "./roomMapperConfig";
 
-class UserMapperConfig extends MapperConfigBase<User, UserDto> {
+export class UserMapperConfig extends MapperConfigBase<User, UserDto> {
     forward(src: User): UserDto {
         const dto: UserDto = {
-            provider: src.provider,
             id: src._id,
+            provider: src.provider,
             email: src.email,
             username: src.username,
             picture: src.picture,
@@ -14,10 +16,9 @@ class UserMapperConfig extends MapperConfigBase<User, UserDto> {
             lastName: src.lastName,
             phoneNumber: src.phoneNumber,
             gender: src.gender,
-            rating: src.rating,
-            messages: src.messages,
-            rooms: src.rooms,
-            friends: src.friends
+            messages: src.messages ? src.messages.map(e => messageMapperConfig.forward(e)) : undefined,
+            rooms: src.rooms ? src.rooms.map(e => roomMapperConfig.forward(e)) : undefined,
+            friends: src.friends ? src.friends.map(e => this.forward(e)) : undefined
         }
 
         return dto;
@@ -25,18 +26,18 @@ class UserMapperConfig extends MapperConfigBase<User, UserDto> {
     reverse(src: Partial<UserDto>): Partial<User> {
         const model: Partial<User> = { 
             _id: src.id,
+            provider: src.provider,
             email: src.email,
             username: src.username,
             picture: src.picture,
             firstName: src.firstName,
             lastName: src.lastName,
             phoneNumber: src.phoneNumber,
-            gender: src.gender,
-            rating: src.rating
+            gender: src.gender
          };
 
         return model;
     }
 }
 
-export default UserMapperConfig;
+export default new UserMapperConfig();

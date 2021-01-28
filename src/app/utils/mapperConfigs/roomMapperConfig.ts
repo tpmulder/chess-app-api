@@ -1,21 +1,21 @@
 import RoomDto from "../../dtos/room/dto";
 import { Room } from "../../models/room/interface";
 import { User } from "../../models/user/interface";
-import MapperConfigBase from "./base/mapperConfigBase";
+import { MapperConfigBase } from "./base/mapperConfigBase";
+import messageMapperConfig from "./messageMapperConfig";
+import userMapperConfig from "./userMapperConfig";
 
-class RoomMapperConfig extends MapperConfigBase<Room, RoomDto> {
+export class RoomMapperConfig extends MapperConfigBase<Room, RoomDto> {
     forward(src: Room): RoomDto {
         const dto: RoomDto = {
             id: src._id,
             name: src.name,
             description: src.description,
             isPublic: src.isPublic,
-            messages: src.messages,
-            users: src.users.length > 0 
-                ? (typeof src.users[0] === 'string' 
-                    ? new Array<User>() 
-                    : src.users as User[]) 
-                : new Array<User>(),
+            messages: src.messages ? src.messages.map(e => messageMapperConfig.forward(e)) : undefined,
+            users: src.users && typeof src.users === 'object'
+                ? (src.users as User[]).map(e => userMapperConfig.forward(e))
+                : src.users
         }
 
         return dto;
@@ -31,7 +31,7 @@ class RoomMapperConfig extends MapperConfigBase<Room, RoomDto> {
                 ? (typeof src.users[0] !== 'string' 
                     ? undefined 
                     : src.users as string[]) 
-                : new Array<User>()) 
+                : undefined) 
             : undefined,
         }
 
@@ -39,4 +39,4 @@ class RoomMapperConfig extends MapperConfigBase<Room, RoomDto> {
     }
 }
 
-export default RoomMapperConfig;
+export default new RoomMapperConfig();

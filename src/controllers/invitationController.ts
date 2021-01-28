@@ -2,19 +2,19 @@ import ControllerBase from "./base/controllerBase";
 import 'express-async-errors';
 import { Invitation } from "../app/models/invitation/interface";
 import { InvitationDto } from "../app/dtos/invitation/dto";
-import { IInvitationService } from "../app/services/invitationService";
-import InvitationMapperConfig from "../app/utils/mapperConfigs/invitationMapperConfig";
-import { MapperConfig } from "../app/utils/mapperConfigs/base/mapperConfigBase";
+import { InvitationService } from "../app/services/invitationService";
+import invitationMapperConfig, { InvitationMapperConfig } from "../app/utils/mapperConfigs/invitationMapperConfig";
 
-export default class MessageController extends ControllerBase<Invitation, InvitationDto> {
-    private readonly invitationService: IInvitationService;
+export default class InvitationController extends ControllerBase<Invitation, InvitationDto> {
+    private readonly invitationService: InvitationService;
     private readonly invitationMapperConfig: InvitationMapperConfig;
 
-    constructor(invService: IInvitationService, mapping: InvitationMapperConfig) {
-        super("messages", invService, mapping);
+    constructor() {
+        const service = new InvitationService();
+        super("invitations", service, invitationMapperConfig);
 
-        this.invitationService = invService;
-        this.invitationMapperConfig = mapping;
+        this.invitationService = service;
+        this.invitationMapperConfig = invitationMapperConfig;
     }
 
     protected routes() {

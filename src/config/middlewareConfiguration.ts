@@ -2,8 +2,8 @@ import { Application } from "express";
 import bodyParser from "body-parser";
 import helmet from "helmet";
 import cors from "cors";
-import { errorHandler } from "../app/middlewares/errorHandler";
-import { requestLogger } from "../app/middlewares/requestLogger";
+import { errorHandler } from "../app/middleware/errorHandler";
+import { requestLogger } from "../app/middleware/requestLogger";
 
 const configurePostRouteMiddlewares = (app: Application) => {
     app.use(errorHandler);

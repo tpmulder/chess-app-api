@@ -1,13 +1,13 @@
 import Mongoose from "mongoose";
 import { InvitationFor, InvitationStatus } from "../../common/enums";
-import { SchemaModelBase } from "../base/baseSchema";
+import { BaseSchema, SchemaModelBase } from "../base/baseSchema";
 import { Invitation } from "./interface";
 
 export interface InvitationModel extends SchemaModelBase<Invitation> {
   
 }
 
-const invitationSchema = new Mongoose.Schema({
+const invitationSchema = new BaseSchema({
     sender: {
         ref: 'User', type: Mongoose.Schema.Types.ObjectId, required: true
     },

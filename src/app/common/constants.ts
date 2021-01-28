@@ -1,42 +1,42 @@
-export enum Environment {
-    Local = "local",
-    Dev = "development",
-    Prod = "production"
+export class Environment {
+    static local = "local"
+    static dev = "development"
+    static prod = "production"
   }
   
-  export enum ErrorMessages {
-    InternalServerError = "Something went wrong",
-    Unauthorized = "You do not have permission to access this data.",
-    InvalidParameters = "The parameters supplied were invalid",
-    NotFound = "{ITEM} with {PATH} '{VAL}' does not exist"
+  export class ErrorMessages {
+    static internalServerError = "Something went wrong"
+    static unauthorized = "You do not have permission to access this data."
+    static invalidParameters = "The parameters supplied were invalid"
+    static notFound = "{ITEM} with {PATH} '{VAL}' does not exist"
   }
   
-  export enum ChessColours {
-    black = 'b',
-    white = 'w'
+  export class ChessColours {
+    static black = 'b'
+    static white = 'w'
   }
   
-  export enum PieceNames {
-    BlackPawn = 'p',
-    BlackRook = 'r',
-    BlackKnight = 'n',
-    BlackQueen = 'q',
-    BlackKing = 'k',
-    BlackBisshop = 'b',
-    WhitePawn = 'P',
-    WhiteRook = 'R',
-    WhiteKnight = 'N',
-    WhiteQueen = 'Q',
-    WhiteKing = 'K',
-    WhiteBisshop = 'B'
+  export class PieceNames {
+    static blackPawn = 'p'
+    static blackRook = 'r'
+    static blackKnight = 'n'
+    static blackQueen = 'q'
+    static blackKing = 'k'
+    static blackBisshop = 'b'
+    static whitePawn = 'P'
+    static whiteRook = 'R'
+    static whiteKnight = 'N'
+    static whiteQueen = 'Q'
+    static whiteKing = 'K'
+    static whiteBisshop = 'B'
   }
   
-  export enum UserProviders {
-    Auth0 = 'auth0'
+  export class UserProviders {
+    static auth0 = 'Auth0'
   }
   
-  export enum ChatEvents {
-    Connected = 'connected',
-    Chatting = 'chatting',
-    Disconnected = 'disconnected'
+  export class ChatEvents {
+    static connected = 'connected'
+    static chatting = 'chatting'
+    static disconnected = 'disconnected'
   }

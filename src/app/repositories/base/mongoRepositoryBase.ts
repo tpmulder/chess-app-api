@@ -7,7 +7,7 @@ import PaginationResult from "../../utils/pagination/paginationResult";
 
 interface MongoRepository<T extends Mongoose.Document> {
   getPaged(params: PaginationParams): Promise<PaginationResult>
-  getRangeById(ids: string[]): Promise<T[]>
+  getRangeById(ids: string[], includes?: string, selects?: string): Promise<T[]>
   getById(id: string, includes?: string, selects?: string): Promise<T>
   create(item: Partial<T>): Promise<T>
   update(id: string, item: Partial<T>): Promise<T>
@@ -34,15 +34,15 @@ abstract class RepositoryBase<T extends Mongoose.Document> implements MongoRepos
     return await this.operate<PaginationResult>(() => this.schemaModel.paginate(params.searchQuery ? params.searchQuery : {}, options));
   }
 
-  async getRangeById(ids: string[]) {
-    return await this.operate<T[]>(this.schemaModel.find({ _id: { $in: ids } }).exec);
+  async getRangeById(ids: string[], includes?: string, selects?: string) {
+    return await this.operate<T[]>(() => this.schemaModel.find({ _id: { $in: ids } }).populate(includes).exec());
   }
 
   async getById(id: string, includes?: string, selects?: string): Promise<T> {
     const selected = selects ? selects.split(',').join(' ') : undefined
     const included = includes ? includes.split(',').join(' ') : undefined
 
-    return await this.operate<T>(this.schemaModel.findById(this.toObjectId(id)).populate(included).select(selected).orFail(new NotFoundError(id)).exec);
+    return await this.operate<T>(() => this.schemaModel.findById(this.toObjectId(id)).populate(includes).orFail(new NotFoundError(id)).exec())
   }
 
   async create(item: Partial<T>): Promise<T> {
@@ -50,11 +50,11 @@ abstract class RepositoryBase<T extends Mongoose.Document> implements MongoRepos
   }
 
   async update(id: string, item: Partial<T>): Promise<T> {
-    return await this.operate<T>(this.schemaModel.findByIdAndUpdate(this.toObjectId(id), item).orFail(new NotFoundError(id)).exec);
+    return await this.operate<T>(() => this.schemaModel.findByIdAndUpdate(this.toObjectId(id), item).orFail(new NotFoundError(id)).exec());
   }
 
   async delete(id: string): Promise<T> {
-    return await this.operate<T>(this.schemaModel.findByIdAndDelete(this.toObjectId(id)).orFail(new NotFoundError(id)).exec);
+    return await this.operate<T>(() => this.schemaModel.findByIdAndDelete(this.toObjectId(id)).orFail(new NotFoundError(id)).exec());
   }
 
   protected async operate<TResult>(func: () => any): Promise<TResult> {

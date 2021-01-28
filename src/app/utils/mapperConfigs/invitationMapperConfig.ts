@@ -1,17 +1,22 @@
 import { InvitationDto } from "../../dtos/invitation/dto";
 import { Invitation } from "../../models/invitation/interface";
 import { MapperConfigBase } from "./base/mapperConfigBase";
+import userMapperConfig from "./userMapperConfig";
 
-class InvitationMapperConfig extends MapperConfigBase<Invitation, InvitationDto> {
+export class InvitationMapperConfig extends MapperConfigBase<Invitation, InvitationDto> {
     forward(src: Invitation) {
         const dto: InvitationDto = {
             id: src._id,
             description: src.description,
             for: src.for,
             sentOn: src.sentOn,
-            sender: src.sender,
+            sender: typeof src.sender !== 'object'
+                ? undefined
+                : userMapperConfig.forward(src.sender),
             status: src.status,
-            receiver: src.receiver
+            receiver: typeof src.sender !== 'object'
+                ? undefined
+                : userMapperConfig.forward(src.sender),
         }
 
         return dto;
@@ -26,11 +31,11 @@ class InvitationMapperConfig extends MapperConfigBase<Invitation, InvitationDto>
             status: src.status,
             sender: src.sender ? (typeof src.sender !== 'string' 
                     ? undefined 
-                    : src.sender as string) 
+                    : src.sender) 
                 : undefined,
             receiver: src.sender ? (typeof src.sender !== 'string' 
                     ? undefined 
-                    : src.sender as string) 
+                    : src.sender) 
                 : undefined,
         }
 
@@ -38,4 +43,4 @@ class InvitationMapperConfig extends MapperConfigBase<Invitation, InvitationDto>
     }
 }
 
-export default InvitationMapperConfig;
+export default new InvitationMapperConfig();

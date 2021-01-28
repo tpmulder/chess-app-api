@@ -1,9 +1,8 @@
 import { UserProviders } from "../../common/constants"
 import { Genders } from "../../common/enums"
-import DtoBase from "../../models/base/dtoBase"
-import { Message } from "../../models/message/interface"
-import { Room } from "../../models/room/interface"
-import { User } from "../../models/user/interface"
+import DtoBase from "../base/dtoBase"
+import { MessageDto } from "../message/dto"
+import RoomDto from "../room/dto"
 
 export interface UserDto extends DtoBase {
     provider: UserProviders
@@ -14,8 +13,7 @@ export interface UserDto extends DtoBase {
     phoneNumber: string
     lastName: string
     gender: Genders
-    rating: number
-    rooms?: Room[]
-    messages?: Message[]
-    friends?: User[]
+    rooms?: RoomDto[]
+    messages?: MessageDto[]
+    friends?: UserDto[]
 }

@@ -6,6 +6,7 @@ import PaginationParams from '../../app/utils/pagination/paginationParams';
 import 'express-async-errors';
 import { MapperConfig } from '../../app/utils/mapperConfigs/base/mapperConfigBase';
 import { BaseHttpController } from 'inversify-express-utils';
+import { jwtChecker } from '../../app/middleware/jwtChecker';
 
 export interface ApiController {
     readonly path: string
@@ -39,7 +40,7 @@ export default abstract class ControllerBase<T, TDto> extends BaseHttpController
     protected abstract routes(): void;
 
     private initializeBasicRoutes() {
-        this.router.get('/', async (req: express.Request, res: express.Response) => await this.getAll(req, res));
+        this.router.get('/' ,async (req: express.Request, res: express.Response) => await this.getAll(req, res));
         this.router.get('/:id', async (req: express.Request, res: express.Response) => await this.getById(req, res));
         this.router.post('/', async (req: express.Request, res: express.Response) => await this.create(req, res));
         this.router.put('/:id', async (req: express.Request, res: express.Response) => await this.update(req, res));
@@ -48,13 +49,13 @@ export default abstract class ControllerBase<T, TDto> extends BaseHttpController
 
     async getAll(req: express.Request, res: express.Response) {
         const params = new PaginationParams(
-                parseInt(`${req.query.pageNum}`, 10), 
-                parseInt(`${req.query.pageSize}`, 10),
-                req.query.search as string | undefined,
-                req.query.include as string | undefined,
-                req.query.select as string | undefined,
-                req.query.sort as string | undefined,
-            )
+            parseInt(`${req.query.pageNum}`, 10), 
+            parseInt(`${req.query.pageSize}`, 10),
+            req.query.search as string | undefined,
+            req.query.include as string | undefined,
+            req.query.select as string | undefined,
+            req.query.sort as string | undefined,
+        )
 
         const result = await this.service.getAll(params)
 
@@ -64,9 +65,11 @@ export default abstract class ControllerBase<T, TDto> extends BaseHttpController
     }
     
     async getById(req: express.Request, res: express.Response) {
-        const item = await this.service.getById(req.params.id);
+        const includes = `${req.query.include}`
+        const selects = `${req.query.select}`
+        const item = await this.service.getById(req.params.id, includes, selects);
 
-        okResponse(res, this.mapperConfig.forward(await this.service.getById(req.params.id)));
+        okResponse(res, this.mapperConfig.forward(item));
     }
     
     async create(req: express.Request, res: express.Response) {

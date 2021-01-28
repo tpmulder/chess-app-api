@@ -1,16 +1,27 @@
 import { MessageDto } from "../../dtos/message/dto";
 import { Message } from "../../models/message/interface";
-import MapperConfigBase from "./base/mapperConfigBase";
+import { Room } from "../../models/room/interface";
+import { User } from "../../models/user/interface";
+import { MapperConfigBase } from "./base/mapperConfigBase";
+import roomMapperConfig from "./roomMapperConfig";
+import userMapperConfig from "./userMapperConfig";
 
-class MessageMapperConfig extends MapperConfigBase<Message, MessageDto> {
+export class MessageMapperConfig extends MapperConfigBase<Message, MessageDto> {
     forward(src: Message): MessageDto {
         const dto: MessageDto = {
             id: src._id,
             text: src.text,
             sentOn: src.sentOn,
             updatedAt: src.updatedAt,
-            sender: src.sender,
-            room: src.room
+            sender: src.sender && typeof src.sender !== 'object'
+                ? undefined
+                : userMapperConfig.forward(src.sender as User),
+            room: src.room && typeof src.room !== 'object'
+                ? undefined
+                : roomMapperConfig.forward(src.room as Room),
+            receiver: typeof src.sender !== 'object'
+                ? undefined
+                : userMapperConfig.forward(src.sender),
         }
 
         return dto;
@@ -21,14 +32,13 @@ class MessageMapperConfig extends MapperConfigBase<Message, MessageDto> {
             _id: src.id,
             text: src.text,
             sentOn: src.sentOn,
-            updatedAt: src.updatedAt,
             sender: src.sender ? (typeof src.sender !== 'string' 
                     ? undefined 
-                    : src.sender as string) 
+                    : src.sender) 
                 : undefined,
             room: src.room ? (typeof src.room !== 'string' 
                     ? undefined 
-                    : src.room as string) 
+                    : src.room) 
                 : undefined
         }
 
@@ -36,4 +46,4 @@ class MessageMapperConfig extends MapperConfigBase<Message, MessageDto> {
     }
 }
 
-export default MessageMapperConfig;
+export default new MessageMapperConfig();
